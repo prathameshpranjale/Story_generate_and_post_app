@@ -1,10 +1,9 @@
-
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import validator from "validator";
 
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
     {
         username: {
             type: String,
@@ -29,7 +28,7 @@ const userSchema = new mongoose.Schema(
             select: false
         },
         profilePicture: {
-            // cloudinary
+            // cloudinary url
             type: String,
             default: ''
         }
