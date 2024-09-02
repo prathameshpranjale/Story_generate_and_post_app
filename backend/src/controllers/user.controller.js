@@ -1,4 +1,3 @@
-
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.model.js'
@@ -6,24 +5,8 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 
 const registerUser = asyncHandler(async (req, res) => {
-    // console.log('Request received in controller:', req.body);  // Log the request body in the controller
-    // res.status(200).json({
-    //     message: "ok doneee"
-    // });
 
-    // get user details from frontend
-    // validation - not empty
-    // check if user already exists: username, email
-    // check for images, check for avatar
-    // upload them to cloudinary, avatar
-    // create user object - create entry in db
-    // remove password and refresh token field from response
-    // check for user creation
-    // return res
-
-    // form se data aa raha hai 
-    const { email, username, password } = req.body
-    // console.log("email",email)
+    const {email='', username='', password='' } = req.body
 
 
 
@@ -57,9 +40,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     const profilePictureLocalPath = req.files?.profilePicture?.[0];
-    const profilePicture = await uploadOnCloudinary(profilePictureLocalPath.path);
+    const profilePicture = profilePictureLocalPath ? await uploadOnCloudinary(profilePictureLocalPath.path) : null;
+    
     const user = await User.create({
-        profilePicture: profilePicture.url,
+        profilePicture: profilePicture?.url||"",
         email,
         password,
         username: username.toLowerCase()
@@ -76,7 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     return res.status(201).json(
-        new ApiResponse(200, createdUser, "User registered Successfully <& - &>")
+        new ApiResponse(201, createdUser, "User registered Successfully <& - &>")
     )
 
 });
