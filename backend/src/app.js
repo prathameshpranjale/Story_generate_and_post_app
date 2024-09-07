@@ -17,12 +17,24 @@ app.use(express.static("public"));
 
 // Import routes
 import userRouter from "./routes/user.route.js";
+import Story from "./routes/story.route.js";
 
-// Route declaration with middleware
+// Route declaration with middleware 
 app.use('/api/v1/users', (req, res, next) => {
     console.log('Route Hit!!!!!', req.path);
     next();
 }, userRouter);
+
+
+app.use('/api/v1/stories',(req,res,next)=>{
+    console.log('Route Hit story!!!!!', req.path);
+    next();
+},Story)
+
+
+
+
+
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
