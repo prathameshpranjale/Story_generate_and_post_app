@@ -53,7 +53,7 @@ const generateStory = asyncHandler(async (req, res) => {
     }
 });
 
-// NEED TO ADD THE FUNCTION TO DELETE THE SYORY THAT ARE NOT POSTED 
+// NEED TO ADD THE FUNCTION TO DELETE THE StORY THAT ARE NOT POSTED 
 // Handler to post the story
 const postStory = asyncHandler(async (req, res) => {
     const { storyId } = req.params;
@@ -95,6 +95,7 @@ const postStory = asyncHandler(async (req, res) => {
         });
     }
 });
+
 
 export {
     generateStory,

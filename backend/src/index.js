@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import connectDB from "./db/indexdb.js";  // Updated to point to the correct path
 import { app } from "./app.js";
+import './jobs/cleanupstories.js';
+
 
 dotenv.config({
     path: './.env'
