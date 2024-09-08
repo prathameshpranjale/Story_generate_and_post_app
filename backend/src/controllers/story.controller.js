@@ -33,7 +33,7 @@ const generateStory = asyncHandler(async (req, res) => {
         const story = await Story.create({
             title,
             content: generatedContent,  // Store the generated content from AI
-            author: null, // Placeholder for author if not authenticated
+            author: req.user._id, // Placeholder for author if not authenticated
             isPosted: false,  // Initially, story is not posted
         });
 
