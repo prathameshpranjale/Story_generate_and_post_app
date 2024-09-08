@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {registerUser} from '../controllers/user.controller.js'
+import {registerUser,loginUser} from '../controllers/user.controller.js'
 import { upload } from '../middlewares/multer.middleware.js';
 
 
@@ -17,6 +17,8 @@ router.route("/register").post(([
 ]),registerUser)
 // for single file must learn to use *****
 // router.post('/register', upload.single('profilePicture'), registerUser);
+
+router.route("/login").post(loginUser)
 
 
 

@@ -3,6 +3,32 @@ import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.model.js'
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import jwt from "jsonwebtoken";
+
+
+const generateAccessTokenAndRefreshTokens = async (userId) => {
+    try {
+        const user = await User.findById(userId)
+        // acess and refresh token methods from user model
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        // adding refresh token to database
+        user.refreshToken = refreshToken
+        // saving the and adding this line of validate before save
+        // cause we dont want to kickin the password check functionality 
+        // so it is must add await as its gonna take some time
+        await user.save({ validateBeforeSave: false })
+        // also there is no need to hold such methods in any variable 
+
+        // after saving return both tokens
+        return { accessToken, refreshToken }
+
+
+    } catch (error) {
+        throw new ApiError(500, "something went wrong while genereating refresh and acess token!!!!!!!!!! ")
+    }
+}
 
 const registerUser = asyncHandler(async (req, res) => {
 
@@ -65,7 +91,50 @@ const registerUser = asyncHandler(async (req, res) => {
 
 });
 
+const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+    if (!password) {
+        throw new ApiError(400, "password is required");
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+        throw new ApiError(404, "User does not exist");
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Password is incorrect");
+    }
+
+    try {
+        const { accessToken, refreshToken } = await generateAccessTokenAndRefreshTokens(user._id);
+
+        const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+        const options = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None' // Optional: adds additional security
+        };
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
+    } catch (error) {
+        throw new ApiError(500, "Error generating tokens");
+    }
+});
+
+
 
 export {
-    registerUser
+    registerUser,
+    loginUser
 };

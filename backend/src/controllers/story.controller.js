@@ -1,7 +1,7 @@
 import axios from 'axios';  // To communicate with the Flask app (AI model)
 import { Story } from '../models/story.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { ApiError } from '../utils/ApiError.js';
+import mongoose from 'mongoose';
 
 
 const generateStory = asyncHandler(async (req, res) => {
@@ -40,6 +40,7 @@ const generateStory = asyncHandler(async (req, res) => {
         res.status(201).json({
             success: true,
             data: story,
+            storyId: story._id, 
             message: "Story generated and saved as draft successfully",
         });
 
@@ -52,27 +53,47 @@ const generateStory = asyncHandler(async (req, res) => {
     }
 });
 
-
+// NEED TO ADD THE FUNCTION TO DELETE THE SYORY THAT ARE NOT POSTED 
 // Handler to post the story
 const postStory = asyncHandler(async (req, res) => {
     const { storyId } = req.params;
 
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(storyId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid story ID format",
+        });
+    }
+
+    // Find the story by ID
     const story = await Story.findById(storyId);
 
     if (!story) {
-        throw new ApiError(404, "Story not found");
+        return res.status(404).json({
+            success: false,
+            message: "Story not found",
+        });
     }
 
     // Update the story to mark it as posted
     story.isPosted = true;
     story.postedAt = Date.now();
-    await story.save();
 
-    res.status(200).json({
-        success: true,
-        data: story,
-        message: "Story posted successfully",
-    });
+    // Save the updated story in the database
+    try {
+        await story.save();
+        res.status(200).json({
+            success: true,
+            data: story,
+            message: "Story posted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to post story",
+        });
+    }
 });
 
 export {
